@@ -28,6 +28,7 @@ def readLapcholAsDict(data_dir, anns_dir, incl_videos, sample_rate):
 
         if os.path.isfile(anns_path):
             anns_df = pd.read_csv(anns_path, delimiter='\t')
+            anns_df = anns_df.dropna()
         else:
             print('Cannot find annotations for video ' + str(video_nr))
             continue
@@ -38,31 +39,25 @@ def readLapcholAsDict(data_dir, anns_dir, incl_videos, sample_rate):
 
         if os.path.isdir(dir_path):
             for i, row in anns_df.iterrows():
-                try:
-                    frame_nr = int(row['frame'])
-                # print(i)
+                frame_nr = int(row['frame'])
                 # Select only one frame in {sample_rate} number of frames
-                    if frame_nr % sample_rate == 0:
-                        G_A_Grade = row['G_A_Grade']    # change to Adhesions_label = row['A'] or G_A_Grade 
+                if frame_nr % sample_rate == 0:
+                    Gallbladder_label = row['G_A_Grade']    # change to Adhesions_label = row['A'] or G_A_Grade 
                     #frame_path = dir_path + '/video' + f"{video_nr:02d}" + '_' + str(frame_nr) + '.jpg'
-                        frame_path = dir_path + '/frame-' + f"{frame_nr:06}" + '-000' + '.png'
+                    frame_path = dir_path + '/frame-' + f"{frame_nr:06}" + '-000' + '.png'
                     # print('IDX', idx)
                     # print('Frame nr', frame_nr)
 
-                        if os.path.isfile(frame_path):
-                            samples[idx] = {
-                            'frame_path': frame_path,
-                            'frame_nr': frame_nr,
-                            'video_nr': video_nr,
-                            'G_A_Grade': G_A_Grade # change to 'Adhesions_label': Adhesions_label
-                        }
-                            idx += 1
-                        else:
-                            print('Cannot find frame', frame_nr, 'in video', video_nr)
-                except:
-                    print('Cannot convert float NaN to integer')
-
-
+                    if os.path.isfile(frame_path):
+                        samples[idx] = {
+                        'frame_path': frame_path,
+                        'frame_nr': frame_nr,
+                        'video_nr': video_nr,
+                        'label': Gallbladder_label # change to Adhesions_label or Gallbladder_label
+                    }
+                        idx += 1
+                    else:
+                        print('Cannot find frame', frame_nr, 'in video', video_nr)
         else:
             print('Cannot find video frames for video ' + str(video_nr))
 
@@ -72,7 +67,7 @@ def readLapcholAsDict(data_dir, anns_dir, incl_videos, sample_rate):
 def filter_excl(samples):
     remove_samples_excl = []
     for sample in samples:
-        if samples[sample]['G_A_Grade'] == 'excl':  # remove all samples with label: 0
+        if samples[sample]['label'] == 'excl':  # remove all samples with label: 0
             remove_samples_excl.append(sample)
 
     for sample in remove_samples_excl:
@@ -93,7 +88,7 @@ def filter_excl(samples):
 def filter_zeros(samples):
     remove_samples = []
     for sample in samples:
-        if samples[sample]['G_A_Grade'] == 0: # remove all samples with label: 0
+        if samples[sample]['label'] == 0: # remove all samples with label: 0
             remove_samples.append(sample)
 
     for sample in remove_samples:
@@ -114,11 +109,11 @@ def filter_zeros(samples):
 def change_values(samples):
     samples_to_change = []
     for sample in samples:
-        if samples[sample]['G_A_Grade'] == 3:
+        if samples[sample]['label'] == 3:
                 samples_to_change.append(sample)
 
     for sample in samples_to_change:
-        samples[sample]['G_A_Grade'] = 2
+        samples[sample]['label'] = 2
     print(f'! Changed {len(samples_to_change)} samples from 3 to 2')
 
     return samples
@@ -130,7 +125,7 @@ def all_ints(samples):
 
     for sample in float_to_int:
         try:
-            samples[sample]['G_A_Grade'] = int(samples[sample]['G_A_Grade'])
+            samples[sample]['label'] = int(samples[sample]['label'])
         except:
             print('This does not work for label excl')
 
@@ -163,8 +158,8 @@ class LapcholDataset(Dataset):
 
         # Load the Cholec80 as a dictionary of samples, incl. paths to frames and annotations
         self.samples = readLapcholAsDict(self.data_dir, self.anns_dir, self.incl_videos, self.sample_rate)
-        self.samples = all_ints(self.samples) # tested
         self.samples = filter_excl(self.samples) # tested
+        self.samples = all_ints(self.samples) # tested
         self.samples = filter_zeros(self.samples) # tested --> optional
         self.samples = change_values(self.samples) # tested --> optional
 
