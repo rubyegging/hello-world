@@ -29,7 +29,8 @@ class LabelToInt():
         #self.class_labels = ['Preparation', 'CalotTriangleDissection', 'ClippingCutting', 'GallbladderDissection', \
                 #'GallbladderPackaging', 'CleaningCoagulation', 'GallbladderRetraction']
 
-        self.tv_tform = labels.index
+        self.tv_tform = labels.index 
+        # or if label == 1, label =0 and if label == 2, label=1?
 
     def __call__(self, data: dict) -> dict:
         for field in self.fields:

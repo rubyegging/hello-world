@@ -42,7 +42,7 @@ def readLapcholAsDict(data_dir, anns_dir, incl_videos, sample_rate):
                 frame_nr = int(row['frame'])
                 # Select only one frame in {sample_rate} number of frames
                 if frame_nr % sample_rate == 0:
-                    Gallbladder_label = row['G_A_Grade']    # change to Adhesions_label = row['A'] or G_A_Grade 
+                    G_A_Grade = row['G_A_Grade']    # change to Adhesions_label = row['A'] or G_A_Grade 
                     #frame_path = dir_path + '/video' + f"{video_nr:02d}" + '_' + str(frame_nr) + '.jpg'
                     frame_path = dir_path + '/frame-' + f"{frame_nr:06}" + '-000' + '.png'
                     # print('IDX', idx)
@@ -53,7 +53,7 @@ def readLapcholAsDict(data_dir, anns_dir, incl_videos, sample_rate):
                         'frame_path': frame_path,
                         'frame_nr': frame_nr,
                         'video_nr': video_nr,
-                        'label': Gallbladder_label # change to Adhesions_label or Gallbladder_label
+                        'label': G_A_Grade # change to Adhesions_label or Gallbladder_label
                     }
                         idx += 1
                     else:
